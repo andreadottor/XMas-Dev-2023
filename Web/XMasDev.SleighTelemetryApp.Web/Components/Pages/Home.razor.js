@@ -1,10 +1,12 @@
 
 
 export function initMap(el, lat, lon) {
-    var map = L.map(el).setView([lat, lon], 13);
+    var map = L.map(el, { attributionControl: false })
+               .setView([lat, lon], 13);
+
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        //attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     var santaIcon = L.icon({ iconUrl: 'images/santa claus_icon.png', iconSize: [48, 48], iconAnchor: [24, 48] });
