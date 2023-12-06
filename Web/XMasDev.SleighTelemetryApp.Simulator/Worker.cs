@@ -33,9 +33,9 @@ namespace XMasDev.SleighTelemetryApp.Simulator
                     Date = DateTime.Now,
                     Latitude = latitude,
                     Longitude = longitude,
-                    GyroX = 3,
-                    GyroY = 4,
-                    GyroZ = 5,
+                    GyroX = random.Next(-45, 45),
+                    GyroY = random.Next(-30, 30),
+                    GyroZ = random.Next(-90, 90),
                     GiftsDelivered = gifts
                 };
 

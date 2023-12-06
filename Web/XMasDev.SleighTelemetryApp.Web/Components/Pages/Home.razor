@@ -3,24 +3,40 @@
 @inject SantaSleighTelemetryStateService StateService
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Santa's Sleigh telemetry</PageTitle>
 
-<h1>XMas Dev</h1>
+<h1>Santa's Sleigh telemetry</h1>
+<h3><i class="bi bi-gift"></i> Gifts delivered: @StateService.GiftsDelivered</h3>
 
 <div id="map" @ref="_mapEl"></div>
 
+
+<div class="row">
+    <div class="card col m-3">
+        <div class="card-body text-center">
+            <h5 class="card-title">Pitching</h5>
+            <img src="images/sleigh_x.png" style="transform: rotate(@(StateService.GyroX)deg); transition-duration: 500ms;" class="m-3" width="200" />
+        </div>
+    </div>
+    <div class="card col m-3">
+        <div class="card-body text-center">
+            <h5 class="card-title">Rolling</h5>
+            <img src="images/sleigh_y.png" style="transform: rotate(@(StateService.GyroY)deg); transition-duration: 500ms;" class="m-3" width="200" />
+        </div>
+    </div>
+</div>
+
+<hr />
+
 <p>
-    @StateService.Date
+    last update: <small>@StateService.Date</small>
 </p>
-
-
 
 @code {
     private IJSObjectReference? _module;
     private IJSObjectReference? _polyline;
     private IJSObjectReference? _mapJs;
-    private ElementReference? _mapEl;
-
+    private ElementReference?   _mapEl;
 
     private const double RomeLatitude = 41.902782;
     private const double RomeLongitude = 12.496366;
@@ -36,12 +52,14 @@
     {
         if (firstRender)
         {
+            var latitude = StateService.Latitude == 0 ? RomeLatitude : StateService.Latitude;
+            var longitude = StateService.Longitude == 0 ? RomeLongitude : StateService.Longitude;
+
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
-            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, RomeLatitude, RomeLongitude);
-            _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, RomeLatitude, RomeLongitude);
+            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, latitude, longitude);
+            _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, latitude, longitude);
         }
     }
-
 
     private void TelemetryChanged(object? sender, EventArgs e)
     {
@@ -55,13 +73,11 @@
     {
         try
         {
+            _polyline?.DisposeAsync();
+            _mapJs?.DisposeAsync();
             _module?.DisposeAsync();
         }
-        catch (JSDisconnectedException)
-        {
-
-        }
-
+        catch (JSDisconnectedException) { }
 
         if (StateService is not null)
             StateService.StateChanged -= TelemetryChanged;

@@ -1,6 +1,7 @@
 ﻿namespace XMasDev.SleighTelemetryApp.Web.Services;
 
 using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.Cosmos;
 using System.Diagnostics;
 using System.Text.Json;
 using XMasDev.SleighTelemetryApp.Shared.Dtos;
@@ -12,6 +13,9 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
 
     private readonly ServiceBusClient _client;
     private readonly ServiceBusProcessor _processor;
+
+    private readonly CosmosClient _cosmosClient;
+    private readonly Container _cosmosContainer;
 
 
     public DateTime Date { get; private set; }
@@ -25,8 +29,23 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
 
     public SantaSleighTelemetryStateService(IConfiguration configuration)
     {
-        var cs = configuration.GetConnectionString("ServiceBusConnection");
-        _client = new ServiceBusClient(cs);
+        var csServiceBus = configuration.GetConnectionString("ServiceBusConnection");
+        var csCosmos = configuration.GetConnectionString("CosmosDbConnection");
+        
+        _cosmosClient = new CosmosClient(csCosmos);
+        _cosmosContainer = _cosmosClient.GetContainer("SantaSleighTelemetry", "Items");
+
+        var lastPosition = _cosmosContainer.GetItemLinqQueryable<PersistedTelemetryData>(allowSynchronousQueryExecution: true)
+                                        .OrderByDescending(x => x.DateAndTime)
+                                        .Take(1)
+                                        .ToList();
+
+        if (lastPosition is not null)
+        {
+            UpdateState(lastPosition.First());
+        }
+        
+        _client = new ServiceBusClient(csServiceBus);
         _processor = _client.CreateProcessor("SantaSleighTelemetry", "web", new ServiceBusProcessorOptions());
         // add handler to process messages
         _processor.ProcessMessageAsync += MessageHandler;
