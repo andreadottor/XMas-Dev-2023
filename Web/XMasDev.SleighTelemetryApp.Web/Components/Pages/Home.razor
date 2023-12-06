@@ -1,7 +1,71 @@
 ﻿@page "/"
+@implements IDisposable
+@inject SantaSleighTelemetryStateService StateService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>XMas Dev</h1>
 
-Welcome to your new app.
+<div id="map" @ref="_mapEl"></div>
+
+<p>
+    @StateService.Date
+</p>
+
+
+
+@code {
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _polyline;
+    private IJSObjectReference? _mapJs;
+    private ElementReference? _mapEl;
+
+
+    private const double RomeLatitude = 41.902782;
+    private const double RomeLongitude = 12.496366;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateService.StateChanged += TelemetryChanged;
+
+        await StateService.StartMonitoringAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
+            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, RomeLatitude, RomeLongitude);
+            _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, RomeLatitude, RomeLongitude);
+        }
+    }
+
+
+    private void TelemetryChanged(object? sender, EventArgs e)
+    {
+        if (_module is not null)
+            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, StateService.Latitude, StateService.Longitude);
+
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            _module?.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+
+        }
+
+
+        if (StateService is not null)
+            StateService.StateChanged -= TelemetryChanged;
+
+    }
+
+}

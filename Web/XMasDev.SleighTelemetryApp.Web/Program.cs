@@ -1,10 +1,13 @@
 using XMasDev.SleighTelemetryApp.Web.Components;
+using XMasDev.SleighTelemetryApp.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddTransient<SantaSleighTelemetryStateService>();
 
 var app = builder.Build();
 

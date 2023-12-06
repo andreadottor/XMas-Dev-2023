@@ -4,10 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>44fc9ad5-4522-48f7-b7e3-043b5f44dc68</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\XMasDev.SleighTelemetryApp.Shared\XMasDev.SleighTelemetryApp.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\libs\" />
   </ItemGroup>
 
 </Project>

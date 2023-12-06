@@ -10,6 +10,9 @@ namespace XMasDev.SleighTelemetryApp.Simulator
         private readonly ILogger<Worker> _logger;
         private readonly DeviceClient _deviceClient;
 
+        private const double RomeLatitude = 41.902782;
+        private const double RomeLongitude = 12.496366;
+
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -18,17 +21,22 @@ namespace XMasDev.SleighTelemetryApp.Simulator
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var latitude = RomeLatitude;
+            var longitude = RomeLongitude;
+            var random = new Random();
+            var gifts = random.Next(1000, 10000);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 var data = new SleighTelemetryData
                 {
                     Date = DateTime.Now,
-                    Latitude = 1,
-                    Longitude = 2,
+                    Latitude = latitude,
+                    Longitude = longitude,
                     GyroX = 3,
                     GyroY = 4,
                     GyroZ = 5,
-                    GiftsDelivered = 6
+                    GiftsDelivered = gifts
                 };
 
                 var json = JsonSerializer.Serialize(data);
@@ -43,7 +51,11 @@ namespace XMasDev.SleighTelemetryApp.Simulator
                 {
                     _logger.LogInformation("Message sent: {data}", data);
                 }
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(2000, stoppingToken);
+
+                latitude += (random.NextDouble() * 0.01);
+                longitude += (random.NextDouble() * 0.01);
+                gifts += random.Next(1, 10);
             }
         }
     }
