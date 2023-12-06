@@ -1,12 +1,12 @@
 ﻿@page "/"
-@implements IDisposable
-@inject SantaSleighTelemetryStateService StateService
+@inherits OwningComponentBase<SantaSleighTelemetryStateService>
+@implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Santa's Sleigh telemetry</PageTitle>
 
 <h1>Santa's Sleigh telemetry</h1>
-<h3><i class="bi bi-gift"></i> Gifts delivered: @StateService.GiftsDelivered</h3>
+<h3><i class="bi bi-gift"></i> Gifts delivered: @Service.GiftsDelivered</h3>
 
 <div id="map" @ref="_mapEl"></div>
 
@@ -15,13 +15,13 @@
     <div class="card col m-3">
         <div class="card-body text-center">
             <h5 class="card-title">Pitching</h5>
-            <img src="images/sleigh_x.png" style="transform: rotate(@(StateService.GyroX)deg); transition-duration: 500ms;" class="m-3" width="200" />
+            <img src="images/sleigh_x.png" style="transform: rotate(@(Service.GyroX)deg); transition-duration: 500ms;" class="m-3" width="200" />
         </div>
     </div>
     <div class="card col m-3">
         <div class="card-body text-center">
             <h5 class="card-title">Rolling</h5>
-            <img src="images/sleigh_y.png" style="transform: rotate(@(StateService.GyroY)deg); transition-duration: 500ms;" class="m-3" width="200" />
+            <img src="images/sleigh_y.png" style="transform: rotate(@(Service.GyroY)deg); transition-duration: 500ms;" class="m-3" width="200" />
         </div>
     </div>
 </div>
@@ -29,7 +29,7 @@
 <hr />
 
 <p>
-    last update: <small>@StateService.Date</small>
+    last update: <small>@Service.Date</small>
 </p>
 
 @code {
@@ -43,17 +43,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        StateService.StateChanged += TelemetryChanged;
+        Service.StateChanged += TelemetryChanged;
 
-        await StateService.StartMonitoringAsync();
+        await Service.StartMonitoringAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var latitude = StateService.Latitude == 0 ? RomeLatitude : StateService.Latitude;
-            var longitude = StateService.Longitude == 0 ? RomeLongitude : StateService.Longitude;
+            var latitude = Service.Latitude == 0 ? RomeLatitude : Service.Latitude;
+            var longitude = Service.Longitude == 0 ? RomeLongitude : Service.Longitude;
 
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
             _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, latitude, longitude);
@@ -64,24 +64,23 @@
     private void TelemetryChanged(object? sender, EventArgs e)
     {
         if (_module is not null)
-            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, StateService.Latitude, StateService.Longitude);
+            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, Service.Latitude, Service.Longitude);
 
         InvokeAsync(() => StateHasChanged());
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         try
         {
-            _polyline?.DisposeAsync();
-            _mapJs?.DisposeAsync();
-            _module?.DisposeAsync();
+            if (_polyline is not null) await _polyline.DisposeAsync();
+            if (_mapJs is not null)    await _mapJs.DisposeAsync();
+            if (_module is not null)   await _module.DisposeAsync();
         }
         catch (JSDisconnectedException) { }
 
-        if (StateService is not null)
-            StateService.StateChanged -= TelemetryChanged;
-
+        if (Service is not null)
+            Service.StateChanged -= TelemetryChanged;
     }
 
 }

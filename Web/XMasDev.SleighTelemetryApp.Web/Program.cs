@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddTransient<SantaSleighTelemetryStateService>();
+builder.Services.AddScoped<SantaSleighTelemetryStateService>();
 
 var app = builder.Build();
 
