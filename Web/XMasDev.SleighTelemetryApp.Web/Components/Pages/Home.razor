@@ -15,13 +15,13 @@
     <div class="card col m-3">
         <div class="card-body text-center">
             <h5 class="card-title">Pitching</h5>
-            <img src="images/sleigh_x.png" style="transform: rotate(@(Service.GyroX)deg); transition-duration: 500ms;" class="m-3" width="200" />
+            <img src="images/sleigh_x.png" style="transform: rotate(@(Service.GyroX)deg); transition-duration: 1000ms;" class="m-3" width="200" />
         </div>
     </div>
     <div class="card col m-3">
         <div class="card-body text-center">
             <h5 class="card-title">Rolling</h5>
-            <img src="images/sleigh_y.png" style="transform: rotate(@(Service.GyroY)deg); transition-duration: 500ms;" class="m-3" width="200" />
+            <img src="images/sleigh_y.png" style="transform: rotate(@(Service.GyroY)deg); transition-duration: 1000ms;" class="m-3" width="200" />
         </div>
     </div>
 </div>
@@ -38,7 +38,7 @@
     private IJSObjectReference? _mapJs;
     private ElementReference?   _mapEl;
 
-    private const double RomeLatitude = 41.902782;
+    private const double RomeLatitude  = 41.902782;
     private const double RomeLongitude = 12.496366;
 
     protected override async Task OnInitializedAsync()
@@ -52,11 +52,11 @@
     {
         if (firstRender)
         {
-            var latitude = Service.Latitude == 0 ? RomeLatitude : Service.Latitude;
+            var latitude  = Service.Latitude  == 0 ? RomeLatitude : Service.Latitude;
             var longitude = Service.Longitude == 0 ? RomeLongitude : Service.Longitude;
 
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
-            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, latitude, longitude);
+            _module   = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
+            _mapJs    = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, latitude, longitude);
             _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, latitude, longitude);
         }
     }

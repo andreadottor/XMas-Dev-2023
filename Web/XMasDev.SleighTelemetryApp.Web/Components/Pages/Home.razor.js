@@ -1,5 +1,3 @@
-
-
 export function initMap(el, lat, lon) {
     var map = L.map(el, { attributionControl: false })
                .setView([lat, lon], 13);
@@ -14,6 +12,7 @@ export function initMap(el, lat, lon) {
     var marker = L.marker([lat, lon], { icon: santaIcon });
     marker.addTo(map);
 
+    // HACK: store marker in global variable
     window.santaMarker = marker;
 
     return map;
@@ -34,6 +33,4 @@ export function updateMap(map, polyline, lat, lon) {
     window.santaMarker.setLatLng([lat, lon]);
 
     map.panTo([lat, lon]).update();
-
-
 }

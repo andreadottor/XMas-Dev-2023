@@ -30,7 +30,7 @@ namespace XMasDev.SleighTelemetryApp.Simulator
             {
                 var data = new SleighTelemetryData
                 {
-                    Date = DateTime.Now,
+                    Date = DateTime.UtcNow,
                     Latitude = latitude,
                     Longitude = longitude,
                     GyroX = random.Next(-45, 45),
@@ -51,7 +51,7 @@ namespace XMasDev.SleighTelemetryApp.Simulator
                 {
                     _logger.LogInformation("Message sent: {data}", data);
                 }
-                await Task.Delay(2000, stoppingToken);
+                await Task.Delay(5000, stoppingToken);
 
                 latitude += (random.NextDouble() * 0.01);
                 longitude += (random.NextDouble() * 0.01);
