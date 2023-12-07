@@ -9,6 +9,8 @@ using XMasDev.SleighTelemetryApp.Shared.Models;
 
 public class SantaSleighTelemetryStateService : IAsyncDisposable
 {
+    private const double RomeLatitude  = 41.902782;
+    private const double RomeLongitude = 12.496366;
     public event EventHandler? StateChanged;
 
     private readonly ServiceBusClient    _client;
@@ -28,11 +30,11 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
 
     public SantaSleighTelemetryStateService(IConfiguration configuration)
     {
-        var csServiceBus = configuration.GetConnectionString("ServiceBusConnection");
-        var csCosmos     = configuration.GetConnectionString("CosmosDbConnection");
-        
-        _cosmosClient    = new CosmosClient(csCosmos);
-        _cosmosContainer = _cosmosClient.GetContainer("SantaSleighTelemetry", "Items");
+        var csCosmos         = configuration.GetConnectionString("CosmosDbConnection");
+        var csServiceBus     = configuration.GetConnectionString("ServiceBusConnection");
+        var subscriptionName = configuration.GetValue<string>("ServiceBus:SubscriptionName");
+        _cosmosClient        = new CosmosClient(csCosmos);
+        _cosmosContainer     = _cosmosClient.GetContainer("SantaSleighTelemetry", "Items");
 
         // Get the last position for set the initial state
         var lastPosition = _cosmosContainer
@@ -42,10 +44,17 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
                                 .ToList();
 
         if (lastPosition is not null)
+        {
             UpdateState(lastPosition.First());
+        }
+        else
+        {
+            Latitude = RomeLatitude;
+            Longitude = RomeLongitude;
+        }
         
         _client    = new ServiceBusClient(csServiceBus);
-        _processor = _client.CreateProcessor("SantaSleighTelemetry", "web", new ServiceBusProcessorOptions());
+        _processor = _client.CreateProcessor("SantaSleighTelemetry", subscriptionName, new ServiceBusProcessorOptions());
         _processor.ProcessMessageAsync += MessageHandler;
         _processor.ProcessErrorAsync += ErrorHandler;
     }
@@ -53,7 +62,8 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
     public async Task StartMonitoringAsync()
     {
         // start processing realtime data
-        await _processor.StartProcessingAsync();
+        if(!_processor.IsProcessing)
+            await _processor.StartProcessingAsync();
     }
 
     private async Task MessageHandler(ProcessMessageEventArgs args)

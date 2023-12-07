@@ -1,27 +1,32 @@
 ﻿@page "/"
-@inherits OwningComponentBase<SantaSleighTelemetryStateService>
 @implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
+@inject SantaSleighTelemetryStateService StateService
 
 <PageTitle>Santa's Sleigh telemetry</PageTitle>
 
 <h1>Santa's Sleigh telemetry</h1>
-<h3><i class="bi bi-gift"></i> Gifts delivered: @Service.GiftsDelivered</h3>
+<h3><i class="bi bi-gift"></i> Gifts delivered: @StateService.GiftsDelivered</h3>
 
 <div id="map" @ref="_mapEl"></div>
 
 
 <div class="row">
-    <div class="card col m-3">
-        <div class="card-body text-center">
-            <h5 class="card-title">Pitching</h5>
-            <img src="images/sleigh_x.png" style="transform: rotate(@(Service.GyroX)deg); transition-duration: 1000ms;" class="m-3" width="200" />
+    <div class="col-md-6">
+        <div class="card m-3">
+            <div class="card-body text-center overflow-hidden">
+                <h5 class="card-title">Pitching</h5>
+                <img src="images/sleigh_x.png"
+                     style="transform: rotate(@(StateService.GyroX)deg);" class="m-3 img-gyro" />
+            </div>
         </div>
     </div>
-    <div class="card col m-3">
-        <div class="card-body text-center">
-            <h5 class="card-title">Rolling</h5>
-            <img src="images/sleigh_y.png" style="transform: rotate(@(Service.GyroY)deg); transition-duration: 1000ms;" class="m-3" width="200" />
+    <div class="col-md-6">
+        <div class="card m-3">
+            <div class="card-body text-center overflow-hidden">
+                <h5 class="card-title">Rolling</h5>
+                <img src="images/sleigh_y.png" style="transform: rotate(@(StateService.GyroY)deg);" class="m-3 img-gyro" />
+            </div>
         </div>
     </div>
 </div>
@@ -29,7 +34,7 @@
 <hr />
 
 <p>
-    last update: <small>@Service.Date</small>
+    last update: <small>@StateService.Date</small>
 </p>
 
 @code {
@@ -38,33 +43,27 @@
     private IJSObjectReference? _mapJs;
     private ElementReference?   _mapEl;
 
-    private const double RomeLatitude  = 41.902782;
-    private const double RomeLongitude = 12.496366;
-
     protected override async Task OnInitializedAsync()
     {
-        Service.StateChanged += TelemetryChanged;
+        StateService.StateChanged += TelemetryChanged;
 
-        await Service.StartMonitoringAsync();
+        await StateService.StartMonitoringAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var latitude  = Service.Latitude  == 0 ? RomeLatitude : Service.Latitude;
-            var longitude = Service.Longitude == 0 ? RomeLongitude : Service.Longitude;
-
-            _module   = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
-            _mapJs    = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, latitude, longitude);
-            _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, latitude, longitude);
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
+            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, StateService.Latitude, StateService.Longitude);
+            _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, StateService.Latitude, StateService.Longitude);
         }
     }
 
     private void TelemetryChanged(object? sender, EventArgs e)
     {
         if (_module is not null)
-            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, Service.Latitude, Service.Longitude);
+            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, StateService.Latitude, StateService.Longitude);
 
         InvokeAsync(() => StateHasChanged());
     }
@@ -74,13 +73,13 @@
         try
         {
             if (_polyline is not null) await _polyline.DisposeAsync();
-            if (_mapJs is not null)    await _mapJs.DisposeAsync();
-            if (_module is not null)   await _module.DisposeAsync();
+            if (_mapJs is not null) await _mapJs.DisposeAsync();
+            if (_module is not null) await _module.DisposeAsync();
         }
         catch (JSDisconnectedException) { }
 
-        if (Service is not null)
-            Service.StateChanged -= TelemetryChanged;
+        if (StateService is not null)
+            StateService.StateChanged -= TelemetryChanged;
     }
 
 }

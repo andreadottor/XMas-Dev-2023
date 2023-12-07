@@ -16,4 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="..\XMasDev.SleighTelemetryApp.Shared\XMasDev.SleighTelemetryApp.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Route.gpx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
