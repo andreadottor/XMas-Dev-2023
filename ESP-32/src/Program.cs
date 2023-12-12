@@ -2,8 +2,14 @@ using System.Diagnostics;
 
 namespace XMasDevice
 {
+    /// <summary>
+    /// The main program.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Defines the entry point of the application.
+        /// </summary>
         public static void Main()
         {
             Debug.WriteLine("Hello from nanoFramework!");

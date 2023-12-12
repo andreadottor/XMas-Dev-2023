@@ -12,6 +12,9 @@ using System.Threading;
 
 namespace XMasDevice
 {
+    /// <summary>
+    /// The application.
+    /// </summary>
     public class Application
     {
         #region Constants
@@ -58,6 +61,12 @@ namespace XMasDevice
 
         #region Properties
 
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
+        /// <value>
+        /// The instance.
+        /// </value>
         public static Application Instance
         {
             get
@@ -92,6 +101,9 @@ namespace XMasDevice
 
         #region Public Methods
 
+        /// <summary>
+        /// Runs this instance.
+        /// </summary>
         public void Run()
         {
             try

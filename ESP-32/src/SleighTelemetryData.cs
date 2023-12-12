@@ -7,6 +7,8 @@ namespace XMasDevice
     /// </summary>
     public class SleighTelemetryData
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the date.
         /// </summary>
@@ -62,5 +64,7 @@ namespace XMasDevice
         /// The gifts delivered.
         /// </value>
         public int GiftsDelivered { get; set; }
+
+        #endregion
     }
 }
