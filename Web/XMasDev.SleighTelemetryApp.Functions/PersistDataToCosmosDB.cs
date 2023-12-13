@@ -16,13 +16,20 @@ public class PersistDataToCosmosDB
     }
 
     [Function(nameof(PersistDataToCosmosDB))]
-    [CosmosDBOutput("SantaSleighTelemetry", "Items", Connection = "CosmosDbConnectionString", CreateIfNotExists = true, PartitionKey = "/Date")]
-
-    public PersistedTelemetryData? Run([ServiceBusTrigger("SantaSleighTelemetry", "ToCosmosDB", Connection = "ServiceBusConnection")] ServiceBusReceivedMessage message)
+    [CosmosDBOutput("SantaSleighTelemetry", "Items", 
+                    Connection = "CosmosDbConnectionString", 
+                    CreateIfNotExists = true, 
+                    PartitionKey = "/Date")]
+    public PersistedTelemetryData? Run([ServiceBusTrigger("SantaSleighTelemetry", 
+                                                          "ToCosmosDB", 
+                                                          Connection = "ServiceBusConnection")] ServiceBusReceivedMessage message)
     {
-        _logger.LogInformation("Message ID: {id}", message.MessageId);
-        _logger.LogInformation("Message Body: {body}", message.Body);
-        _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("Message ID: {id}", message.MessageId);
+            _logger.LogInformation("Message Body: {body}", message.Body);
+            _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
+        }
 
         var telemetry = System.Text.Json.JsonSerializer.Deserialize<SleighTelemetryData>(message.Body.ToString());
         if(telemetry is null)

@@ -11,6 +11,7 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
 {
     private const double RomeLatitude  = 41.902782;
     private const double RomeLongitude = 12.496366;
+
     public event EventHandler? StateChanged;
 
     private readonly ServiceBusClient    _client;
@@ -49,14 +50,14 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
         }
         else
         {
-            Latitude = RomeLatitude;
+            Latitude  = RomeLatitude;
             Longitude = RomeLongitude;
         }
         
         _client    = new ServiceBusClient(csServiceBus);
         _processor = _client.CreateProcessor("SantaSleighTelemetry", subscriptionName, new ServiceBusProcessorOptions());
         _processor.ProcessMessageAsync += MessageHandler;
-        _processor.ProcessErrorAsync += ErrorHandler;
+        _processor.ProcessErrorAsync   += ErrorHandler;
     }
 
     public async Task StartMonitoringAsync()
@@ -68,7 +69,7 @@ public class SantaSleighTelemetryStateService : IAsyncDisposable
 
     private async Task MessageHandler(ProcessMessageEventArgs args)
     {
-        string body = args.Message.Body.ToString();
+        var body      = args.Message.Body.ToString();
         var telemetry = JsonSerializer.Deserialize<SleighTelemetryData>(body);
 
         // complete the message. messages is deleted from the subscription. 

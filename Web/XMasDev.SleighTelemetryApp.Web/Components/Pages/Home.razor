@@ -10,7 +10,6 @@
 
 <div id="map" @ref="_mapEl"></div>
 
-
 <div class="row">
     <div class="col-md-6">
         <div class="card m-3">
@@ -54,8 +53,8 @@
     {
         if (firstRender)
         {
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
-            _mapJs = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, StateService.Latitude, StateService.Longitude);
+            _module   = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Pages/Home.razor.js");
+            _mapJs    = await _module.InvokeAsync<IJSObjectReference>("initMap", _mapEl, StateService.Latitude, StateService.Longitude);
             _polyline = await _module.InvokeAsync<IJSObjectReference>("createPolyline", _mapJs, StateService.Latitude, StateService.Longitude);
         }
     }
@@ -63,7 +62,11 @@
     private void TelemetryChanged(object? sender, EventArgs e)
     {
         if (_module is not null)
-            _ = _module.InvokeVoidAsync("updateMap", _mapJs, _polyline, StateService.Latitude, StateService.Longitude);
+            _ = _module.InvokeVoidAsync("updateMap", 
+                                        _mapJs, 
+                                        _polyline, 
+                                        StateService.Latitude, 
+                                        StateService.Longitude);
 
         InvokeAsync(() => StateHasChanged());
     }
@@ -73,8 +76,8 @@
         try
         {
             if (_polyline is not null) await _polyline.DisposeAsync();
-            if (_mapJs is not null) await _mapJs.DisposeAsync();
-            if (_module is not null) await _module.DisposeAsync();
+            if (_mapJs is not null)    await _mapJs.DisposeAsync();
+            if (_module is not null)   await _module.DisposeAsync();
         }
         catch (JSDisconnectedException) { }
 
