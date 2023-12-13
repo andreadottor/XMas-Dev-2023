@@ -24,8 +24,7 @@ namespace XMasDevice
         private readonly double PI = 3.14159265358979323846;
 
 
-        //private const int ReadyLedPin       = Gpio.IO23;
-        private const int ReadyLedPin       = Gpio.IO02;
+        private const int ReadyLedPin       = Gpio.IO23;
         private const int GiftButtonPin     = Gpio.IO15;
 
         private const int GyroscopeDataPin  = Gpio.IO21;
